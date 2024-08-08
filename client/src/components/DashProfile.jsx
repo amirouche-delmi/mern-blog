@@ -1,25 +1,23 @@
-import { Button, TextInput } from "flowbite-react";
-import React, { useRef, useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {getStorage, uploadBytesResumable} from 'firebase/storage'
+import { Alert, Button, TextInput } from 'flowbite-react';
+import { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from 'firebase/storage';
 import { app } from '../firebase';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
-function DashProfile() {
-  const { currentUser, error, loading } = useSelector((state) => state.user);
+export default function DashProfile() {
+  const { currentUser } = useSelector((state) => state.user);
   const [imageFile, setImageFile] = useState(null);
   const [imageFileUrl, setImageFileUrl] = useState(null);
   const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
   const [imageFileUploadError, setImageFileUploadError] = useState(null);
-  const [imageFileUploading, setImageFileUploading] = useState(false);
-  const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
-  const [updateUserError, setUpdateUserError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({});
   const filePickerRef = useRef();
-  const dispatch = useDispatch();
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -27,7 +25,6 @@ function DashProfile() {
       setImageFileUrl(URL.createObjectURL(file));
     }
   };
-
   useEffect(() => {
     if (imageFile) {
       uploadImage();
@@ -38,16 +35,17 @@ function DashProfile() {
     // service firebase.storage {
     //   match /b/{bucket}/o {
     //     match /{allPaths=**} {
-    //       allow read, write: if false;
+    //       allow read;
     //       allow write: if
     //       request.resource.size < 2 * 1024 * 1024 &&
-    //       request.resource.contentType.matchs['image/.*']
+    //       request.resource.contentType.matches('image/.*')
     //     }
     //   }
     // }
+    setImageFileUploadError(null);
     const storage = getStorage(app);
     const fileName = new Date().getTime() + imageFile.name;
-    const storageRef = ref(storage, fileName)
+    const storageRef = ref(storage, fileName);
     const uploadTask = uploadBytesResumable(storageRef, imageFile);
     uploadTask.on(
       'state_changed',
@@ -64,37 +62,27 @@ function DashProfile() {
         setImageFileUploadProgress(null);
         setImageFile(null);
         setImageFileUrl(null);
-        setImageFileUploading(false);
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           setImageFileUrl(downloadURL);
-          setFormData({ ...formData, profilePicture: downloadURL });
-          setImageFileUploading(false);
         });
       }
     );
   };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Updating profile...');
-    // Add your form submission logic here
-  };
-
   return (
-    <div className="max-w-lg mx-auto p-3 w-full">
-      <h1 className="my-7 text-center font-semibold text-3xl">Profile</h1>
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+    <div className='max-w-lg mx-auto p-3 w-full'>
+      <h1 className='my-7 text-center font-semibold text-3xl'>Profile</h1>
+      <form className='flex flex-col gap-4'>
         <input
-          type="file"
-          accept="image/*"
+          type='file'
+          accept='image/*'
           onChange={handleImageChange}
           ref={filePickerRef}
           hidden
         />
         <div
-          className="w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full"
+          className='relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full'
           onClick={() => filePickerRef.current.click()}
         >
           {imageFileUploadProgress && (
@@ -128,29 +116,30 @@ function DashProfile() {
             }`}
           />
         </div>
+        {imageFileUploadError && (
+          <Alert color='failure'>{imageFileUploadError}</Alert>
+        )}
         <TextInput
-          type="text"
-          id="username"
-          placeholder="username"
+          type='text'
+          id='username'
+          placeholder='username'
           defaultValue={currentUser.username}
         />
         <TextInput
-          type="email"
-          id="email"
-          placeholder="email"
+          type='email'
+          id='email'
+          placeholder='email'
           defaultValue={currentUser.email}
         />
-        <TextInput type="password" id="password" placeholder="password" />
-        <Button type="submit" gradientDuoTone="purpleToBlue" outline>
+        <TextInput type='password' id='password' placeholder='password' />
+        <Button type='submit' gradientDuoTone='purpleToBlue' outline>
           Update
         </Button>
       </form>
-      <div className="text-red-500 flex justify-between mt-5">
-        <span className="cursor-pointer">Delete Account</span>
-        <span className="cursor-pointer">Sign Out</span>
+      <div className='text-red-500 flex justify-between mt-5'>
+        <span className='cursor-pointer'>Delete Account</span>
+        <span className='cursor-pointer'>Sign Out</span>
       </div>
     </div>
   );
 }
-
-export default DashProfile;
