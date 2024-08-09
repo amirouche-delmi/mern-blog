@@ -1,41 +1,39 @@
-import express from "express";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import userRoutes from "./routes/user.route.js";
-import authRoutes from "./routes/auth.route.js";
-import cookieParser from 'cookie-parser'
+import express from 'express';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import userRoutes from './routes/user.route.js';
+import authRoutes from './routes/auth.route.js';
+import cookieParser from 'cookie-parser';
 
-dotenv.config(); // Charger les variables d'environnement depuis le fichier .env
+dotenv.config();
 
-const app = express();
-
-// Middleware pour analyser les requêtes JSON
-app.use(express.json());
-app.use(cookieParser)
-
-// Connexion à MongoDB
 mongoose
   .connect(process.env.MONGO)
   .then(() => {
-    console.log("MongoDB is connected");
+    console.log('MongoDb is connected');
   })
   .catch((err) => {
-    console.error("Error connecting to MongoDB:", err.message);
+    console.log(err);
   });
 
-// Définir un port depuis les variables d'environnement ou utiliser 3000 par défaut
-const PORT = process.env.PORT || 3000;
+const app = express();
 
-// Démarrer le serveur
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.use(express.json());
+app.use(cookieParser());
+
+app.listen(3000, () => {
+  console.log('Server is running on port 3000!');
 });
 
-app.use("/api/user", userRoutes);
-app.use("/api/auth", authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  res.status(statusCode).json({ success: false, statusCode, message });
+  const message = err.message || 'Internal Server Error';
+  res.status(statusCode).json({
+    success: false,
+    statusCode,
+    message,
+  });
 });
