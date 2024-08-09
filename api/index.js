@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import userRoutes from "./routes/user.route.js";
 import authRoutes from "./routes/auth.route.js";
+import cookieParser from 'cookie-parser'
 
 dotenv.config(); // Charger les variables d'environnement depuis le fichier .env
 
@@ -10,6 +11,7 @@ const app = express();
 
 // Middleware pour analyser les requêtes JSON
 app.use(express.json());
+app.use(cookieParser)
 
 // Connexion à MongoDB
 mongoose
