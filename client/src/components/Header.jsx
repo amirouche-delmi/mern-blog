@@ -11,6 +11,7 @@ export default function Header() {
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
   const { theme } = useSelector((state) => state.theme);
+  
   const handleSignout = async () => {
     try {
       const res = await fetch('/api/user/signout', {
