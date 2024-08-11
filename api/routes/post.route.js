@@ -9,3 +9,4 @@ router.get('/getposts', getposts)
 
 
 export default router;
+
